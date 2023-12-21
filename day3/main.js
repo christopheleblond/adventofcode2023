@@ -1,6 +1,10 @@
 var fs = require('fs')
 
-fs.readFile('./test.txt', (err, data) => {
+console.log('<style>')
+console.log(" * { background-color: black; color: white; font-family: monospace}")
+console.log('</style>')
+
+fs.readFile('./data.txt', (err, data) => {
     processInput(data.toString())
 })
 
@@ -19,28 +23,25 @@ function processInput(data) {
 
 function processLine(lineIndex, data) {
 
-    let sum = getAllNumbersOfLine(data[lineIndex])
-                .filter(n => isNumberAdjacentWithSymbol(n, lineIndex, data))
-                .reduce((acc, cur) => acc + cur, 0)
+    let validNumbers = getAllNumbersOfLine(data[lineIndex])
+    .filter(n => isNumberAdjacentWithSymbol(n, lineIndex, data))
 
-    return sum
+    let output = data[lineIndex]
+    validNumbers.forEach(n => output = output.replace(n, "<span style='color:yellow'>" + n + "</span>") )
+
+    console.log(output, ' : ', validNumbers.join(" "))
+
+    return validNumbers.reduce((acc, cur) => acc + cur, 0)
 }
 
 function isNumberAdjacentWithSymbol(n, lineIndex, data) {
-    //console.log(lineIndex, data[lineIndex], n, data[lineIndex].indexOf(n))
-
     let adjacentsChars = getAllAdjacents(n, { x: data[lineIndex].indexOf(n), y: lineIndex }, data)
-    adjacentsChars.forEach(c => {
-        if(!'.0123456789'.includes(c)) {
-            return true
-        }
-    })
-    return false
+    return adjacentsChars.filter(c => c != '.').length > 0
 }
 
 function getAllAdjacents(n, pos, data) {
-    let len = '' + n
-
+    let len = ('' + n).length
+    
     let abovePositions = []
     let bottomPositions = []
     for(let i = 0; i <= len; i++) {
@@ -58,19 +59,13 @@ function getAllAdjacents(n, pos, data) {
         { x: pos.x - 1, y: pos.y - 1 }, ...abovePositions,
         { x: pos.x - 1, y: pos.y }, { x: pos.x + len, y: pos.y },
         { x: pos.x - 1, y: pos.y + 1}, ...bottomPositions
-    ].map(pos => {
-        if(pos.y < 0 || pos.y >= data.length
-            || pos.x < 0 || pos.x >= data[0].length) {
-            return undefined
-        }else{
-            return data[pos.y][pos.x]
-        }
-    }).filter(char => !!char)
+    ].map(pos => getCharAt(pos.x, pos.y, data))
+    .filter(char => !!char)
 }
 
 function getCharAt(x, y, lines) {
-    if(y < lines.length) {
-        if(x < lines[y].length) {
+    if(y >= 0 && y < lines.length) {
+        if(x >= 0 && x < lines[y].length) {
             return lines[y][x]
         }
     }
