@@ -27,8 +27,45 @@ function processLine(lineIndex, data) {
 }
 
 function isNumberAdjacentWithSymbol(n, lineIndex, data) {
-    console.log(lineIndex, data[lineIndex], n, data[lineIndex].indexOf(n))
-    return n % 2 === 0
+    //console.log(lineIndex, data[lineIndex], n, data[lineIndex].indexOf(n))
+
+    let adjacentsChars = getAllAdjacents(n, { x: data[lineIndex].indexOf(n), y: lineIndex }, data)
+    adjacentsChars.forEach(c => {
+        if(!'.0123456789'.includes(c)) {
+            return true
+        }
+    })
+    return false
+}
+
+function getAllAdjacents(n, pos, data) {
+    let len = '' + n
+
+    let abovePositions = []
+    let bottomPositions = []
+    for(let i = 0; i <= len; i++) {
+        abovePositions.push({
+            x: pos.x + i, 
+            y: pos.y - 1
+        })
+        bottomPositions.push({
+            x: pos.x + i,
+            y: pos.y + 1
+        })
+    }
+
+    return [
+        { x: pos.x - 1, y: pos.y - 1 }, ...abovePositions,
+        { x: pos.x - 1, y: pos.y }, { x: pos.x + len, y: pos.y },
+        { x: pos.x - 1, y: pos.y + 1}, ...bottomPositions
+    ].map(pos => {
+        if(pos.y < 0 || pos.y >= data.length
+            || pos.x < 0 || pos.x >= data[0].length) {
+            return undefined
+        }else{
+            return data[pos.y][pos.x]
+        }
+    }).filter(char => !!char)
 }
 
 function getCharAt(x, y, lines) {

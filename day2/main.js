@@ -9,8 +9,10 @@ function processInput(input) {
 
     var result = lines    
     .map(line => parseLine(line))
-    .filter(game => accept(game))
-    .map(game => game.gameId)
+    //.filter(game => accept(game))
+    //.map(game => game.gameId)
+    .map(game => minimumOfCubes(game))
+    .map(part => pow(part))
     .reduce((acc, cur) => acc + cur, 0)
 
     console.log(result)
@@ -40,4 +42,29 @@ function accept(game) {
     && (!p.blue || p.blue <= 14))
 
     return res.length === game.parts.length
+}
+
+function minimumOfCubes(game) {
+
+    let res = game.parts.reduce((acc, cur) => {
+        if(!!cur.red && cur.red > acc.red) {
+            acc.red = cur.red
+        }
+        if(!!cur.blue && cur.blue > acc.blue) {
+            acc.blue = cur.blue
+        }
+        if(!!cur.green && cur.green > acc.green) {
+            acc.green = cur.green
+        }
+        
+        return acc
+    }, {
+        red: 0, blue: 0, green: 0
+    })
+
+    return res
+}
+
+function pow(part) {
+    return (part.red || 1) * (part.blue || 1) * (part.green || 1)
 }
