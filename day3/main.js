@@ -1,12 +1,12 @@
 var fs = require('fs')
 
-console.log('<style>')
-console.log(" * { background-color: black; color: white; font-family: monospace}")
-console.log('</style>')
-
 fs.readFile('./data.txt', (err, data) => {
     processInput(data.toString())
 })
+
+function len(n) {
+    return 
+}
 
 function processInput(data) {
     let lines = data
@@ -14,28 +14,46 @@ function processInput(data) {
 
     let result = 0
     for(let i = 0; i < lines.length; i++ ) {
-        let value = processLine(i, lines)
+        let value = processLine(i, lines, result)
         result += value
     }
 
    console.log(result)
 }
 
-function processLine(lineIndex, data) {
+function processLine(lineIndex, data, r) {
 
     let validNumbers = getAllNumbersOfLine(data[lineIndex])
-    .filter(n => isNumberAdjacentWithSymbol(n, lineIndex, data))
-
-    let output = data[lineIndex]
-    validNumbers.forEach(n => output = output.replace(n, "<span style='color:yellow'>" + n + "</span>") )
-
-    console.log(output, ' : ', validNumbers.join(" "))
+                        .filter(n => isNumberAdjacentWithSymbol(n, lineIndex, data))
 
     return validNumbers.reduce((acc, cur) => acc + cur, 0)
 }
 
-function isNumberAdjacentWithSymbol(n, lineIndex, data) {
-    let adjacentsChars = getAllAdjacents(n, { x: data[lineIndex].indexOf(n), y: lineIndex }, data)
+function isNumber(c) {
+    if(c === undefined) {
+        return false
+    }
+    return !isNaN(c)
+}
+
+function isNumberAdjacentWithSymbol(n, lineIndex, data) {    
+
+    let numberIndex = data[lineIndex].indexOf(n)
+    let len = ('' + n).length
+
+    let charBefore = data[lineIndex][numberIndex - 1]
+    let charAfter = data[lineIndex][numberIndex + len]
+
+    let numberNotFound = isNumber(charBefore) || isNumber(charAfter)
+
+    while(numberNotFound && numberIndex >= 0 && numberIndex < data[lineIndex].length) {
+        numberIndex = data[lineIndex].indexOf(n, numberIndex + len)        
+        charBefore = data[lineIndex][numberIndex - 1]
+        charAfter = data[lineIndex][numberIndex + len]
+        numberNotFound = isNumber(charBefore) || isNumber(charAfter)        
+    }
+  
+    let adjacentsChars = getAllAdjacents(n, { x: numberIndex, y: lineIndex }, data)
     return adjacentsChars.filter(c => c != '.').length > 0
 }
 
@@ -55,12 +73,14 @@ function getAllAdjacents(n, pos, data) {
         })
     }
 
-    return [
+    let r = [
         { x: pos.x - 1, y: pos.y - 1 }, ...abovePositions,
         { x: pos.x - 1, y: pos.y }, { x: pos.x + len, y: pos.y },
         { x: pos.x - 1, y: pos.y + 1}, ...bottomPositions
     ].map(pos => getCharAt(pos.x, pos.y, data))
-    .filter(char => !!char)
+    .filter(char => !!char)    
+
+    return r
 }
 
 function getCharAt(x, y, lines) {
